@@ -16,9 +16,11 @@ usage() {
 }
 
 process_notify() {
+	local port=$1
+
 	while true
 	do
-		nc -lp 8081 | xargs -0 -n 1 notify-send ;
+		nc -lp ${port:-8081} | xargs -0 -n 1 notify-send ;
 		sleep 1;
 	done
 }
