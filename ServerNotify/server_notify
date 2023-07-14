@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+scriptdir="$(cd "${0%/*}" || exit 1; pwd)"
+rootdir="${scriptdir%/*}"
+
+. "${rootdir}/functions.sh"
+
+usage() {
+    echo "usage: $(basename "$0") [-lp]"
+    echo "  options:"
+    echo "      -h|--help - show this help menu"
+    echo "      -l|--listen - listen mode"
+    echo "      -p|--port - the port which use to listen, default is 8081"
+    echo "      -v|--verbose - verbose output"
+
+}
+
+process_notify() {
+	while true
+	do
+		nc -lp 8081 | xargs -0 -n 1 notify-send ;
+		sleep 1;
+	done
+}
+
+send_notify() {
+	Project=${PWD##*/}
+	local nc_options=""
+	local port=$1
+
+	if  export | grep SSH_CONNECTION ; then
+		ip_address=$(who -m | cut -d"(" -f2 |cut -d")" -f1)
+	else
+		ip_address="127.0.0.1"
+		nc_options+="-N"
+	fi
+
+	# echo "done!!!" | nc 10.118.81.30 8081
+	if [ -n "${nc_options}" ]; then
+		printf "%s\nTask Done!!!" "${Project}" | nc "${nc_options}" "${ip_address}" ${port:-8081};
+	else
+		printf "%s\nTask Done!!!" "${Project}" | nc "${ip_address}" ${port:-8081};
+	fi
+}
+
+main() {
+	if ! OPTS=$(getopt -o 'hvlp:' --long help,listen,port:verbose -n 'parse-options' -- "$@"); then
+		err "Failed parsing options." >&2
+		usage
+		exit 1
+	fi
+
+	eval set -- "$OPTS"
+
+	while true; do
+		case "$1" in
+			-h | --help)            usage; exit 0 ;;
+			-l | --listen)          listen=true; shift ;;
+			-p | --port)            port+=("$2"); shift ; shift ;;
+			-v | --verbose)         export VERBOSE=true; shift ;;
+			-- ) shift; break ;;
+			* ) err "unsupported argument $1"; usage; exit 1 ;;
+		esac
+	done
+
+	dbg "PORT=${port[*]}"
+	dbg "LISTEN=${listen}"
+
+	if [ -n "${listen}" ] && [ "${listen}" = true ]; then
+		process_notify "${port[*]}"
+	else
+		send_notify "${port[*]}"
+	fi
+}
+
+main "$@"
