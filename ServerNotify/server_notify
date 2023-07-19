@@ -20,7 +20,7 @@ process_notify() {
 
 	while true
 	do
-		nc -lp ${port:-8081} | xargs -0 -n 1 notify-send ;
+		nc -lp ${port:-8081} | xargs -0 -n 1 notify-send -u critical;
 		sleep 1;
 	done
 }
