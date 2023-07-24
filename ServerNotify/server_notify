@@ -30,11 +30,19 @@ send_notify() {
 	local nc_options=""
 	local port=$1
 
-	if  export | grep SSH_CONNECTION ; then
-		ip_address=$(who -m | cut -d"(" -f2 |cut -d")" -f1)
+	if [ ! -z "$(export | grep SSH_CONNECTION)" ]; then
+		# ssh
+
+		if [ -z "${TMUX}" ];then 
+			ip_address=$(who -m | cut -d"(" -f2 |cut -d")" -f1)
+		else
+			ip_address=${SSH_CONNECTION%% *}
+		fi
 	else
+		# local
+
 		ip_address="127.0.0.1"
-		nc_options+="-N"
+		nc_options="-N"
 	fi
 
 	# echo "done!!!" | nc 10.118.81.30 8081
