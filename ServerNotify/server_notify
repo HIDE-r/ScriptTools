@@ -3,7 +3,9 @@
 scriptdir="$(cd "${0%/*}" || exit 1; pwd)"
 rootdir="${scriptdir%/*}"
 
-. "${rootdir}/functions.sh"
+dbg() {
+    if [ "$VERBOSE" = "true" ]; then echo "$(basename "$0"): $*"; fi
+}
 
 usage() {
     echo "usage: $(basename "$0") [-lp]"
@@ -36,7 +38,7 @@ send_notify() {
 		if [ -z "${TMUX}" ];then 
 			ip_address=$(who -m | cut -d"(" -f2 |cut -d")" -f1)
 		else
-			ip_address=${SSH_CONNECTION%% *}
+			ip_address=$(tmux show-environment SSH_CONNECTION | cut -d '=' -f2 | cut -d " " -f1)
 		fi
 	else
 		# local
