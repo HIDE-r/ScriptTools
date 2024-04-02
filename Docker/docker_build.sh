@@ -14,9 +14,10 @@
 # 	./docker_build.sh make
 #
 
+VERBOSE=1
+
 run() {
-	local verbose=1
-	if [ "${verbose}" = "1" ]; then
+	if [ "${VERBOSE}" = "1" ]; then
 		echo ""
 		echo "===> [RUN] $*"
 		echo ""
