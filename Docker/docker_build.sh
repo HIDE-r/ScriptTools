@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ -z "${DOCKER_IAMGE}" ] || [ -z "$(docker images -q ${DOCKER_IAMGE} 2> /dev/null)" ]; then
+if [ -z "${DOCKER_IAMGE}" ] || [ -z "$(docker images -q "${DOCKER_IAMGE}" 2> /dev/null)" ]; then
 	printf "ERROR: docker image not found, DOCKER_IAMGE=%s\n" "${DOCKER_IAMGE}"
 	exit 1
 fi
@@ -37,8 +37,7 @@ DOCKER_BASE_OPTS=(
 	-v /etc/shadow:/etc/shadow
 	-v /etc/group:/etc/group:ro
 	-v /etc/sudoers:/etc/sudoers:ro
-	-v ./toolchains:/projects:rw
-	-v "${HOME}/.ssh":"${HOME}/.ssh":ro
+	-v "${HOME}"/.ssh:"${HOME}"/.ssh:ro
 	)
 
 SSH_AGENT_OPTS=()
@@ -49,24 +48,26 @@ if [ -n "${SSH_AUTH_SOCK}" ]; then
 		)
 fi
 
-if ${DOCKERFILE_BUILD_ENABLE} && [ -z "$(docker images -q ${DOCKER_IAMGE} 2> /dev/null)" ]; then
-	if [ ! -e ${DOCKERFILE} ]; then
+# NOTE: Build docker image from dockerfile
+if ${DOCKERFILE_BUILD_ENABLE} && [ -z "$(docker images -q "${DOCKER_IAMGE}" 2> /dev/null)" ]; then
+	if [ ! -e "${DOCKERFILE}" ]; then
 		echo "Error: Dockerfile not found !!!"
 		exit 1
 	fi
 
 	echo "Try to build docker image by Dockerfile ..."
-	run docker buildx build -t $DOCKER_IAMGE -f ${DOCKERFILE} .
+	run docker buildx build -t "$DOCKER_IAMGE" -f "${DOCKERFILE}" .
 fi
 
-# hook
-if [ -x "${PROJECT_DIR_PATH}/docker_build_pre_run_hooks.sh" ]; then
-	run source "${PROJECT_DIR_PATH}/docker_build_pre_run_hooks.sh"
+# NOTE: The hook script before running, which use for some projects need to do something to adapt with docker
+if [ -x "${PROJECT_DIR_PATH}/hook_docker_build_pre_run.sh" ]; then
+	run source "${PROJECT_DIR_PATH}/hook_docker_build_pre_run.sh"
 fi
 
 DOCKER_OPTS=(
 	"${DOCKER_BASE_OPTS[@]}"
 	"${SSH_AGENT_OPTS[@]}" 
+	"${OTHER_OPTS[@]}" 
 	)
 
 run docker run --rm -it "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" /usr/bin/bash -c "$*"
