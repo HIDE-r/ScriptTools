@@ -16,6 +16,13 @@
 
 VERBOSE=1
 
+# set -x
+
+bell_message=$(tmux run 2>/dev/null && tmux display-message -p 'Bell in session ❐ #{session_name} ● #{window_index}:#{window_name}')
+bell(){
+	echo -e '\a'; notify-send -i wezterm -u critical "${bell_message}"
+}
+
 run() {
 	if [ "${VERBOSE}" = "1" ]; then
 		echo ""
@@ -99,6 +106,6 @@ if [ "$#" = "0" ];then
 	run docker run --rm -it "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" /usr/bin/bash
 else
 	run docker run --rm -it "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" /usr/bin/bash -c "$*"
+	bell
 fi
 
-command -v "bell" >/dev/null 2>&1 && bell
