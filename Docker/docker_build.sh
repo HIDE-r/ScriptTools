@@ -53,7 +53,7 @@ SCRIPT_DIR_PATH=$(dirname "$(realpath -s "$0")")
 
 # if $PROJECT_DIR_PATH not set, Assume the projects top level path is same as this script absolute path
 PROJECT_DIR_PATH=${PROJECT_DIR_PATH:-${SCRIPT_DIR_PATH}}
-PROJECT_DIR_NAME=$(basename "${SCRIPT_DIR_PATH}")
+PROJECT_DIR_NAME=$(basename "${PROJECT_DIR_PATH}")
 # RELATIVE_POS=$(realpath -m --relative-to="${PROJECT_DIR_PATH}" "${PWD}")
 CONTAINER_NAME="${PROJECT_DIR_NAME}_$(date +%Y%m%d_%H_%M).${RANDOM}"
 
