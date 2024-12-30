@@ -20,7 +20,10 @@ VERBOSE=1
 
 bell_message=$(tmux run 2>/dev/null && tmux display-message -p 'Bell in session ❐ #{session_name} ● #{window_index}:#{window_name}')
 bell(){
-	echo -e '\a'; notify-send -i wezterm -u critical "${bell_message}"
+	echo -e '\a';
+	if which notify-send > /dev/null 2>&1; then
+		notify-send -i wezterm -u critical "${bell_message}"
+	fi
 }
 
 run() {
