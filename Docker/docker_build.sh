@@ -71,6 +71,7 @@ DOCKER_BASE_OPTS=(
 	-v /etc/group:/etc/group:ro
 	-v /etc/sudoers:/etc/sudoers:ro
 	-v "${HOME}"/.ssh:"${HOME}"/.ssh:ro
+	-v "$(realpath -s ${HOME}/.ssh/config)":"${HOME}/.ssh/config":ro
 	)
 
 SSH_AGENT_OPTS=()
