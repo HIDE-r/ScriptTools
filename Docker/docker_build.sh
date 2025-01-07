@@ -18,11 +18,24 @@ VERBOSE=1
 
 # set -x
 
+if cat /proc/version | grep -q -i wsl ;then
+	is_wsl=1
+else
+	is_wsl=0
+fi
+
 bell_message=$(tmux run 2>/dev/null && tmux display-message -p 'Bell in session ❐ #{session_name} ● #{window_index}:#{window_name}')
+
 bell(){
 	echo -e '\a';
-	if which notify-send > /dev/null 2>&1; then
-		notify-send -i wezterm -u critical "${bell_message}"
+
+	if [ "${is_wsl}" = "1" ]; then
+		notify-send-wsl() { wsl-notify-send.exe --category $WSL_DISTRO_NAME "${@}"; }
+		notify-send-wsl "${bell_message}"
+	else
+		if which notify-send > /dev/null 2>&1; then
+			notify-send -i wezterm -u critical "${bell_message}"
+		fi
 	fi
 }
 
