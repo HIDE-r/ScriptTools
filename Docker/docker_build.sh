@@ -120,9 +120,9 @@ DOCKER_OPTS=(
 	)
 
 if [ "$#" = "0" ];then
-	run docker run --rm -it "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" /usr/bin/bash
+	run docker run --rm -it "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" bash
 else
-	run docker run --rm -it "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" /usr/bin/bash -c "$*"
+	run docker run --rm -it "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" bash -c "$*"
 	bell
 fi
 
