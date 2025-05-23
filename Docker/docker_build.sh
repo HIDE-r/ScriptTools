@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
-# NOTE: Please set the follow variables (or save into .envrc) for using this script:
+# NOTE: Please set the follow variables for using this script:
 # - DOCKER_IAMGE		the name of the docker image, which will be used
-# - DOCKERFILE			[optional] the path of dockerfile, default is './Dockerfile'
 # - PROJECT_DIR_PATH		[optional] project root path, default is current script path
+# - DOCKERFILE			[optional] the path of dockerfile, default is './Dockerfile'
 # - DOCKER_BUILD_CMD		[optional] command which use to build image from dockerfile
 #
 # Examples 1:
 # 	env DOCKER_IAMGE=ugw_build ./docker_build.sh make
 #
 # Examples 2:
-# 	echo 'export DOCKER_IAMGE=ugw_build' > .envrc
+# 	echo 'export DOCKER_IAMGE=ugw_build' > .envrc && direnv allow
 # 	./docker_build.sh make
 #
 
@@ -95,6 +95,13 @@ if [ -n "${SSH_AUTH_SOCK}" ]; then
 		)
 fi
 
+ENV_FILE_OPTS=()
+if [ -e ${PROJECT_DIR_PATH}/docker.env ]; then
+	ENV_FILE_OPTS=(
+		--env-file "${PROJECT_DIR_PATH}/docker.env"
+		)
+fi
+
 # NOTE: Build docker image from dockerfile
 if ${DOCKERFILE_BUILD_ENABLE} && [ -z "$(docker images -q "${DOCKER_IAMGE}" 2> /dev/null)" ]; then
 	if [ ! -e "${DOCKERFILE}" ]; then
@@ -116,6 +123,7 @@ fi
 DOCKER_OPTS=(
 	"${DOCKER_BASE_OPTS[@]}"
 	"${SSH_AGENT_OPTS[@]}" 
+	"${ENV_FILE_OPTS[@]}" 
 	"${OTHER_OPTS[@]}" 
 	)
 
