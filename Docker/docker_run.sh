@@ -7,11 +7,11 @@
 # - DOCKER_BUILD_CMD		[optional] command which use to build image from dockerfile
 #
 # Examples 1:
-# 	env DOCKER_IAMGE=ugw_build ./docker_build.sh make
+# 	env DOCKER_IAMGE=ugw_build ./docker_run.sh make
 #
 # Examples 2:
 # 	echo 'export DOCKER_IAMGE=ugw_build' > .envrc && direnv allow
-# 	./docker_build.sh make
+# 	./docker_run.sh make
 #
 
 VERBOSE=1
