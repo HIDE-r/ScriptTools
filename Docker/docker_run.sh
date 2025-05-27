@@ -59,11 +59,6 @@ if [ -z "${DOCKER_IAMGE}" ] || [ -z "$(docker images -q "${DOCKER_IAMGE}" 2> /de
 	exit 1
 fi
 
-DOCKERFILE_BUILD_ENABLE=true
-DOCKERFILE=${DOCKERFILE:-./Dockerfile}
-# DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD:-docker buildx build -t "$DOCKER_IAMGE" -f "${DOCKERFILE}" .}
-DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD:-docker build -t "${DOCKER_IAMGE}" -f "${DOCKERFILE}" .}
-
 # don't expand symlinks
 SCRIPT_DIR_PATH=$(dirname "$(realpath -s "$0")")
 
@@ -72,6 +67,12 @@ PROJECT_DIR_PATH=${PROJECT_DIR_PATH:-${SCRIPT_DIR_PATH}}
 PROJECT_DIR_NAME=$(basename "${PROJECT_DIR_PATH}")
 # RELATIVE_POS=$(realpath -m --relative-to="${PROJECT_DIR_PATH}" "${PWD}")
 CONTAINER_NAME="${PROJECT_DIR_NAME}_$(date +%Y%m%d_%H_%M).${RANDOM}"
+
+DOCKERFILE_BUILD_ENABLE=true
+DOCKERFILE=${DOCKERFILE:-${PROJECT_DIR_PATH}/Dockerfile}
+DOCKER_ENV_FILE=${DOCKER_ENV_FILE:-${PROJECT_DIR_PATH}/docker.env}
+# DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD:-docker buildx build -t "$DOCKER_IAMGE" -f "${DOCKERFILE}" .}
+DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD:-docker build -t "${DOCKER_IAMGE}" -f "${DOCKERFILE}" .}
 
 DOCKER_BASE_OPTS=(
 	--hostname "${DOCKER_IAMGE}"
@@ -96,9 +97,9 @@ if [ -n "${SSH_AUTH_SOCK}" ]; then
 fi
 
 ENV_FILE_OPTS=()
-if [ -e ${PROJECT_DIR_PATH}/docker.env ]; then
+if [ -e "${DOCKER_ENV_FILE}" ]; then
 	ENV_FILE_OPTS=(
-		--env-file "${PROJECT_DIR_PATH}/docker.env"
+		--env-file "${DOCKER_ENV_FILE}"
 		)
 fi
 
