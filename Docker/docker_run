@@ -86,6 +86,7 @@ DOCKER_BASE_OPTS=(
 	-v /etc/sudoers:/etc/sudoers:ro
 	-v "${HOME}"/.ssh:"${HOME}"/.ssh:ro
 	-v "$(realpath -s ${HOME}/.ssh/config)":"${HOME}/.ssh/config":ro
+	-e CCACHE_DIR=${PROJECT_DIR_PATH}/.ccache
 	)
 
 SSH_AGENT_OPTS=()
