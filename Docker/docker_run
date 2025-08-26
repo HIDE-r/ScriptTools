@@ -87,6 +87,7 @@ DOCKER_BASE_OPTS=(
 	-v "${HOME}"/.ssh:"${HOME}"/.ssh:ro
 	-v "$(realpath -s ${HOME}/.ssh/config)":"${HOME}/.ssh/config":ro
 	-e CCACHE_DIR=${PROJECT_DIR_PATH}/.ccache
+	-e TERM=tmux-256color
 	)
 
 SSH_AGENT_OPTS=()
