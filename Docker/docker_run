@@ -26,11 +26,17 @@ fi
 
 bell_message=$(tmux run 2>/dev/null && tmux display-message -p 'Bell in session ❐ #{session_name} ● #{window_index}:#{window_name}')
 
+notify-send-wsl()
+{
+	if which wsl-notify-send.exe > /dev/null 2>&1; then
+		wsl-notify-send.exe --category "$WSL_DISTRO_NAME" "${@}"
+	fi
+}
+
 bell(){
 	echo -e '\a';
 
 	if [ "${is_wsl}" = "1" ]; then
-		notify-send-wsl() { wsl-notify-send.exe --category $WSL_DISTRO_NAME "${@}"; }
 		notify-send-wsl "${bell_message}"
 	else
 		if which notify-send > /dev/null 2>&1; then
@@ -85,8 +91,8 @@ DOCKER_BASE_OPTS=(
 	-v /etc/group:/etc/group:ro
 	-v /etc/sudoers:/etc/sudoers:ro
 	-v "${HOME}"/.ssh:"${HOME}"/.ssh:ro
-	-v "$(realpath -s ${HOME}/.ssh/config)":"${HOME}/.ssh/config":ro
-	-e CCACHE_DIR=${PROJECT_DIR_PATH}/.ccache
+	-v "$(realpath -s "${HOME}"/.ssh/config)":"${HOME}/.ssh/config":ro
+	-e CCACHE_DIR="${PROJECT_DIR_PATH}"/.ccache
 	-e TERM=tmux-256color
 	)
 
@@ -103,6 +109,12 @@ if [ -e "${DOCKER_ENV_FILE}" ]; then
 	ENV_FILE_OPTS=(
 		--env-file "${DOCKER_ENV_FILE}"
 		)
+fi
+
+if [ -t 1 ]; then
+	DOCKER_TTY="-it"
+else
+	DOCKER_TTY="-i"
 fi
 
 # NOTE: Build docker image from dockerfile
@@ -131,9 +143,9 @@ DOCKER_OPTS=(
 	)
 
 if [ "$#" = "0" ];then
-	run docker run --rm -it "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" bash
+	run docker run --rm "$DOCKER_TTY" "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" bash
 else
-	run docker run --rm -it "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" bash -c "$*"
+	run docker run --rm "$DOCKER_TTY" "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" bash -c "$*"
 	bell
 fi
 
