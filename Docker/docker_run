@@ -87,7 +87,7 @@ DOCKER_BASE_OPTS=(
 	-w "${PWD}"
 	-v "${PROJECT_DIR_PATH}":"${PROJECT_DIR_PATH}"
 	-v /etc/passwd:/etc/passwd:ro
-	-v /etc/shadow:/etc/shadow
+	-v /etc/shadow:/etc/shadow:ro
 	-v /etc/group:/etc/group:ro
 	-v /etc/sudoers:/etc/sudoers:ro
 	-v "${HOME}"/.ssh:"${HOME}"/.ssh:ro
