@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
 # NOTE: Please set the follow variables for using this script:
-# - DOCKER_IAMGE		the name of the docker image, which will be used
+# - DOCKER_IMAGE		the name of the docker image, which will be used
 # - PROJECT_DIR_PATH		[optional] project root path, default is current script path
 # - DOCKERFILE			[optional] the path of dockerfile, default is './Dockerfile'
 # - DOCKER_BUILD_CMD		[optional] command which use to build image from dockerfile
 #
 # Examples 1:
-# 	env DOCKER_IAMGE=ugw_build ./docker_run.sh make
+# 	env DOCKER_IMAGE=ugw_build ./docker_run.sh make
 #
 # Examples 2:
-# 	echo 'export DOCKER_IAMGE=ugw_build' > .envrc && direnv allow
+# 	echo 'export DOCKER_IMAGE=ugw_build' > .envrc && direnv allow
 # 	./docker_run.sh make
 #
 
@@ -60,8 +60,8 @@ if ! which direnv > /dev/null 2>&1 && [ -e .envrc ]; then
 	run source .envrc
 fi
 
-if [ -z "${DOCKER_IAMGE}" ] || [ -z "$(docker images -q "${DOCKER_IAMGE}" 2> /dev/null)" ]; then
-	printf "ERROR: docker image not found, DOCKER_IAMGE=%s\n" "${DOCKER_IAMGE}"
+if [ -z "${DOCKER_IMAGE}" ] || [ -z "$(docker images -q "${DOCKER_IMAGE}" 2> /dev/null)" ]; then
+	printf "ERROR: docker image not found, DOCKER_IMAGE=%s\n" "${DOCKER_IMAGE}"
 	exit 1
 fi
 
@@ -77,11 +77,11 @@ CONTAINER_NAME="${PROJECT_DIR_NAME}_$(date +%Y%m%d_%H_%M).${RANDOM}"
 DOCKERFILE_BUILD_ENABLE=true
 DOCKERFILE=${DOCKERFILE:-${PROJECT_DIR_PATH}/Dockerfile}
 DOCKER_ENV_FILE=${DOCKER_ENV_FILE:-${PROJECT_DIR_PATH}/docker.env}
-# DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD:-docker buildx build -t "$DOCKER_IAMGE" -f "${DOCKERFILE}" .}
-DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD:-docker build -t "${DOCKER_IAMGE}" -f "${DOCKERFILE}" .}
+# DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD:-docker buildx build -t "$DOCKER_IMAGE" -f "${DOCKERFILE}" .}
+DOCKER_BUILD_CMD=${DOCKER_BUILD_CMD:-docker build -t "${DOCKER_IMAGE}" -f "${DOCKERFILE}" .}
 
 DOCKER_BASE_OPTS=(
-	--hostname "${DOCKER_IAMGE}"
+	--hostname "${DOCKER_IMAGE}"
 	--name "${CONTAINER_NAME}"
 	--user "$(id -u)":"$(id -g)"
 	-w "${PWD}"
@@ -94,6 +94,7 @@ DOCKER_BASE_OPTS=(
 	-v "$(realpath -s "${HOME}"/.ssh/config)":"${HOME}/.ssh/config":ro
 	-e CCACHE_DIR="${PROJECT_DIR_PATH}"/.ccache
 	-e TERM=tmux-256color
+	-e MENUCONFIG_COLOR=mono
 	)
 
 SSH_AGENT_OPTS=()
@@ -118,7 +119,7 @@ else
 fi
 
 # NOTE: Build docker image from dockerfile
-if ${DOCKERFILE_BUILD_ENABLE} && [ -z "$(docker images -q "${DOCKER_IAMGE}" 2> /dev/null)" ]; then
+if ${DOCKERFILE_BUILD_ENABLE} && [ -z "$(docker images -q "${DOCKER_IMAGE}" 2> /dev/null)" ]; then
 	if [ ! -e "${DOCKERFILE}" ]; then
 		echo "Error: Dockerfile not found !!!"
 		exit 1
@@ -143,9 +144,9 @@ DOCKER_OPTS=(
 	)
 
 if [ "$#" = "0" ];then
-	run docker run --rm "$DOCKER_TTY" "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" bash
+	run docker run --rm "$DOCKER_TTY" "${DOCKER_OPTS[@]}" "${DOCKER_IMAGE}" bash
 else
-	run docker run --rm "$DOCKER_TTY" "${DOCKER_OPTS[@]}" "${DOCKER_IAMGE}" bash -c "$*"
+	run docker run --rm "$DOCKER_TTY" "${DOCKER_OPTS[@]}" "${DOCKER_IMAGE}" bash -c "$*"
 	bell
 fi
 
