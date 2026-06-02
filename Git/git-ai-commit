@@ -36,7 +36,7 @@ fi
 
 {
     cat <<'EOF'
-你是一个资深软件工程师。请根据下面 staged changes 生成中文 Git commit message。
+你是一个资深软件工程师。请根据下面 staged changes 生成英文 Git commit message。
 
 要求：
 1. 第一行简短标题
