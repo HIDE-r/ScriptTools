@@ -87,21 +87,22 @@ DOCKER_BASE_OPTS=(
 	-w "${PWD}"
 	-v "${PROJECT_DIR_PATH}":"${PROJECT_DIR_PATH}"
 	-v /etc/passwd:/etc/passwd:ro
-	-v /etc/shadow:/etc/shadow:ro
 	-v /etc/group:/etc/group:ro
-	-v /etc/sudoers:/etc/sudoers:ro
-	-v "${HOME}"/.ssh:"${HOME}"/.ssh:ro
-	-v "$(realpath -s "${HOME}"/.ssh/config)":"${HOME}/.ssh/config":ro
-	-e CCACHE_DIR="${PROJECT_DIR_PATH}"/.ccache
 	-e TERM=tmux-256color
 	-e MENUCONFIG_COLOR=mono
 	)
 
-SSH_AGENT_OPTS=()
+SSH_OPTS=()
 if [ -n "${SSH_AUTH_SOCK}" ]; then
-	SSH_AGENT_OPTS=(
+	SSH_OPTS=(
 		-v "$(dirname "${SSH_AUTH_SOCK}")":"$(dirname "${SSH_AUTH_SOCK}")"
 		-e SSH_AUTH_SOCK="${SSH_AUTH_SOCK}"
+		)
+else
+	# NOTE: 容易泄漏密钥
+	SSH_OPTS=(
+		-v "${HOME}"/.ssh:"${HOME}"/.ssh:ro
+		-v "$(realpath -s "${HOME}"/.ssh/config)":"${HOME}/.ssh/config":ro
 		)
 fi
 
@@ -111,6 +112,10 @@ if [ -e "${DOCKER_ENV_FILE}" ]; then
 		--env-file "${DOCKER_ENV_FILE}"
 		)
 fi
+
+CCACHE_OPTS=(
+	-e CCACHE_DIR="${PROJECT_DIR_PATH}"/.ccache
+)
 
 if [ -t 1 ]; then
 	DOCKER_TTY="-it"
@@ -138,7 +143,8 @@ fi
 
 DOCKER_OPTS=(
 	"${DOCKER_BASE_OPTS[@]}"
-	"${SSH_AGENT_OPTS[@]}" 
+	"${SSH_OPTS[@]}" 
+	"${CCACHE_OPTS[@]}" 
 	"${ENV_FILE_OPTS[@]}" 
 	"${OTHER_OPTS[@]}" 
 	)
