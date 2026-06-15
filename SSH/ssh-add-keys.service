@@ -1,0 +1,12 @@
+[Unit]
+Description=Add SSH keys to agent
+After=ssh-agent.service
+Requires=ssh-agent.service
+
+[Service]
+Type=oneshot
+Environment=SSH_AUTH_SOCK=%t/ssh-agent.socket
+ExecStart=%h/.local/bin/ssh-add-keys.sh
+
+[Install]
+WantedBy=default.target
