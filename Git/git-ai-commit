@@ -2,6 +2,16 @@
 set -euo pipefail
 
 DO_PRINT=0
+CODEX_ARGS=(
+    --sandbox read-only
+    --ephemeral
+    --color never
+    -c "model_reasoning_effort=\"${AI_COMMIT_REASONING:-low}\""
+)
+
+if [[ -n "${AI_COMMIT_MODEL:-}" ]]; then
+    CODEX_ARGS+=(--model "$AI_COMMIT_MODEL")
+fi
 
 case "${1:-}" in
     --print|-p)
@@ -12,6 +22,10 @@ case "${1:-}" in
 Usage:
   git ai-commit          Generate AI commit message and open git commit editor
   git ai-commit --print  Generate AI commit message and print only
+
+Environment:
+  AI_COMMIT_REASONING  Codex reasoning effort, default: low
+  AI_COMMIT_MODEL      Optional model override for this command
 EOF
         exit 0
         ;;
@@ -57,12 +71,7 @@ EOF
     git diff --cached --no-ext-diff --unified=1 | head -c 6000
 } > "$TMP_PROMPT"
 
-if ! codex exec \
-    --sandbox read-only \
-    --ephemeral \
-    --color never \
-    -o "$TMP_OUTPUT" \
-    - < "$TMP_PROMPT" >/dev/null 2>>"$LOG_FILE"; then
+if ! codex exec "${CODEX_ARGS[@]}" -o "$TMP_OUTPUT" - < "$TMP_PROMPT" >/dev/null 2>>"$LOG_FILE"; then
     echo "codex exec failed, see $LOG_FILE" >&2
     exit 1
 fi
