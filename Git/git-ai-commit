@@ -6,42 +6,53 @@ CODEX_ARGS=(
     --sandbox read-only
     --ephemeral
     --color never
+    --disable apps
+    --disable browser_use
+    --disable computer_use
+    --disable image_generation
+    --disable in_app_browser
+    --disable multi_agent
     -c "model_reasoning_effort=\"${AI_COMMIT_REASONING:-low}\""
+    -c "service_tier=\"${AI_COMMIT_SERVICE_TIER:-priority}\""
+    -c 'web_search="disabled"'
 )
 
 if [[ -n "${AI_COMMIT_MODEL:-}" ]]; then
     CODEX_ARGS+=(--model "$AI_COMMIT_MODEL")
 fi
 
-case "${1:-}" in
-    --print|-p)
-        DO_PRINT=1
-        ;;
-    --help|-h)
-        cat <<'EOF'
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        --print|-p)
+            DO_PRINT=1
+            ;;
+        --help|-h)
+            cat <<'EOF'
 Usage:
-  git ai-commit          Generate AI commit message and open git commit editor
+  git ai-commit          Generate AI commit message with Codex
   git ai-commit --print  Generate AI commit message and print only
 
 Environment:
-  AI_COMMIT_REASONING  Codex reasoning effort, default: low
-  AI_COMMIT_MODEL      Optional model override for this command
+  AI_COMMIT_REASONING     Codex reasoning effort, default: low
+  AI_COMMIT_MODEL         Optional model override for this command
+  AI_COMMIT_SERVICE_TIER  Codex service tier, default: priority
 EOF
-        exit 0
-        ;;
-    "")
-        ;;
-    *)
-        echo "unknown option: $1" >&2
-        exit 1
-        ;;
-esac
+            exit 0
+            ;;
+        *)
+            echo "unknown option: $1" >&2
+            exit 1
+            ;;
+    esac
+    shift
+done
 
 TMP_PROMPT="$(mktemp)"
 TMP_OUTPUT="$(mktemp)"
+TMP_DIFF="$(mktemp)"
 LOG_FILE="${AI_COMMIT_LOG:-/tmp/git-ai-commit.log}"
 
-trap 'rm -f "$TMP_PROMPT" "$TMP_OUTPUT"' EXIT
+trap 'rm -f "$TMP_PROMPT" "$TMP_OUTPUT" "$TMP_DIFF"' EXIT
 
 if git diff --cached --quiet; then
     echo "No staged changes." >&2
@@ -68,7 +79,8 @@ EOF
     git diff --cached --name-status
 
     printf '\n--- diff ---\n'
-    git diff --cached --no-ext-diff --unified=1 | head -c 6000
+    git diff --cached --no-ext-diff --unified=1 > "$TMP_DIFF"
+    head -c 6000 "$TMP_DIFF"
 } > "$TMP_PROMPT"
 
 if ! codex exec "${CODEX_ARGS[@]}" -o "$TMP_OUTPUT" - < "$TMP_PROMPT" >/dev/null 2>>"$LOG_FILE"; then
