@@ -60,8 +60,8 @@ if ! which direnv > /dev/null 2>&1 && [ -e .envrc ]; then
 	run source .envrc
 fi
 
-if [ -z "${DOCKER_IMAGE}" ] || [ -z "$(docker images -q "${DOCKER_IMAGE}" 2> /dev/null)" ]; then
-	printf "ERROR: docker image not found, DOCKER_IMAGE=%s\n" "${DOCKER_IMAGE}"
+if [ -z "${DOCKER_IMAGE}" ]; then
+	printf "ERROR: DOCKER_IMAGE need set in env\n"
 	exit 1
 fi
 
